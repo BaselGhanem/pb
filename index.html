@@ -1,1 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b111d">
+  <meta name="description" content="Power BI Layout Studio — design remarkable dashboard backgrounds, arrange visuals and export precise Power BI-ready assets.">
+  <title>Power BI Layout Studio · X Academy</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='17' fill='%230b111d'/%3E%3Cpath d='M16 17l15 15-15 15m32-30L33 32l15 15' fill='none' stroke='%23099999' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+      <div class="brand-name"><strong>LAYOUT<span>STUDIO</span></strong><small>POWER BI DESIGN WORKSPACE</small></div>
+      <div class="brand-divider"></div>
+      <span class="edition-chip"><span class="status-dot"></span> Studio Edition</span>
+    </div>
+    <div class="top-center"><span class="saved-dot" id="saveDot"></span><span id="saveStatus">All changes saved</span></div>
+    <div class="top-actions">
+      <button class="btn btn-quiet" type="button" id="importBtn" title="Open a saved project"><span class="btn-symbol">↥</span><span class="desktop-label">Open</span></button>
+      <button class="btn btn-quiet" type="button" id="saveProjectBtn" title="Download editable project"><span class="btn-symbol">⌑</span><span class="desktop-label">Save project</span></button>
+      <button class="btn btn-primary" type="button" id="exportBtn"><span class="btn-symbol">↓</span> Export design <span class="export-caret">↗</span></button>
+      <button class="mobile-menu-btn" id="mobileMenu" aria-label="Toggle tools" type="button">☰</button>
+    </div>
+  </header>
 
+  <main class="workspace">
+    <aside class="sidebar sidebar-left" id="leftSidebar">
+      <div class="sidebar-head"><div><span class="eyebrow">CREATIVE WORKSPACE</span><h2>Your design kit</h2></div><div class="panel-icon">✦</div></div>
+      <div class="sidebar-tabs" role="tablist" aria-label="Design tools">
+        <button class="sidebar-tab active" type="button" data-left-tab="build">Build</button>
+        <button class="sidebar-tab" type="button" data-left-tab="theme">Appearance</button>
+        <button class="sidebar-tab" type="button" data-left-tab="layers">Layers</button>
+      </div>
+      <div class="sidebar-scroll">
+        <div class="tab-pane active" id="buildPane">
+          <section class="tool-section">
+            <div class="section-heading"><span>QUICK START</span><span class="muted-heading">03 PRESETS</span></div>
+            <div class="template-grid" id="templateGrid"></div>
+            <p class="micro-hint">Choose a starting point. Every detail stays editable.</p>
+          </section>
+          <section class="tool-section">
+            <div class="section-heading"><span>ADD A VISUAL</span><span class="muted-heading">CLICK TO ADD</span></div>
+            <div class="visual-grid" id="visualGrid"></div>
+          </section>
+          <section class="tool-section">
+            <div class="section-heading"><span>CANVAS SIZE</span></div>
+            <label class="control-label" for="canvasPreset">Page dimensions</label>
+            <select class="field select-field" id="canvasPreset">
+              <option value="1280x720">16:9 · HD — 1280 × 720</option>
+              <option value="1920x1080">16:9 · Full HD — 1920 × 1080</option>
+              <option value="1600x900">16:9 · Studio — 1600 × 900</option>
+              <option value="3840x2160">16:9 · 4K — 3840 × 2160</option>
+              <option value="custom">Custom size</option>
+            </select>
+            <div class="field-pair canvas-fields">
+              <label class="mini-field"><span>WIDTH</span><input type="number" id="canvasWidth" min="320" max="7680" step="1" value="1280"></label>
+              <label class="mini-field"><span>HEIGHT</span><input type="number" id="canvasHeight" min="200" max="4320" step="1" value="720"></label>
+            </div>
+          </section>
+        </div>
+        <div class="tab-pane" id="themePane">
+          <section class="tool-section">
+            <div class="section-heading"><span>COLOR WORLDS</span></div>
+            <div class="theme-options" id="themeOptions"></div>
+          </section>
+          <section class="tool-section">
+            <div class="section-heading"><span>FINE TUNE</span></div>
+            <div class="settings-stack">
+              <label class="color-row"><span>Accent color</span><input type="color" id="accentPicker" value="#099999" aria-label="Accent color"></label>
+              <label class="color-row"><span>Background color</span><input type="color" id="backgroundPicker" value="#0b1426" aria-label="Background color"></label>
+              <label class="color-row"><span>Card color</span><input type="color" id="cardPicker" value="#15233b" aria-label="Card color"></label>
+              <label class="setting-range"><span>Corner softness <output id="radiusValue">18 px</output></span><input id="radiusSlider" type="range" min="0" max="38" value="18"></label>
+              <label class="setting-range"><span>Canvas glow <output id="glowValue">65%</output></span><input id="glowSlider" type="range" min="0" max="100" value="65"></label>
+            </div>
+          </section>
+          <section class="tool-section">
+            <div class="section-heading"><span>PRECISION</span></div>
+            <label class="toggle-row"><span>Show placement grid<small>Editor only, not in exports</small></span><input type="checkbox" id="gridToggle"><i></i></label>
+            <label class="toggle-row"><span>Snap to 8px grid<small>For perfectly aligned layouts</small></span><input type="checkbox" id="snapToggle" checked><i></i></label>
+          </section>
+        </div>
+        <div class="tab-pane" id="layersPane">
+          <section class="tool-section">
+            <div class="section-heading"><span>VISUAL LAYERS</span><span class="muted-heading" id="layerCount">0 ITEMS</span></div>
+            <div id="layersList" class="layers-list"></div>
+          </section>
+          <section class="tool-section"><div class="helper-box">Select an element to edit it. Drag to position, use the corner handle to resize, or fine-tune exact dimensions in Properties.</div></section>
+        </div>
+      </div>
+      <div class="sidebar-footer"><span class="academy-mark">X</span><span>CRAFTED FOR <strong>X ACADEMY</strong></span><span class="footer-version">v1.0</span></div>
+    </aside>
+
+    <section class="center-panel">
+      <div class="document-bar">
+        <div class="document-info"><span class="crumb">Workspace</span><span class="crumb-sep">/</span><input id="projectName" aria-label="Project name" spellcheck="false" maxlength="60" value="Sales Intelligence"><span class="name-pen">✎</span></div>
+        <div class="document-actions">
+          <button id="undoBtn" class="icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo" type="button">↶</button>
+          <button id="redoBtn" class="icon-btn" title="Redo (Ctrl+Y)" aria-label="Redo" type="button">↷</button>
+          <span class="tool-separator"></span>
+          <button id="fitBtn" class="icon-btn" title="Fit canvas" aria-label="Fit canvas" type="button">⛶</button>
+          <button id="zoomOutBtn" class="icon-btn" title="Zoom out" aria-label="Zoom out" type="button">−</button>
+          <span class="zoom-label" id="zoomLabel">100%</span>
+          <button id="zoomInBtn" class="icon-btn" title="Zoom in" aria-label="Zoom in" type="button">+</button>
+        </div>
+      </div>
+      <div class="canvas-area" id="canvasArea">
+        <div class="canvas-overline"><span class="overline-dot"></span> LIVE DESIGN CANVAS <span class="canvas-chip" id="canvasSizeTag">1280 × 720</span></div>
+        <div class="canvas-viewport" id="canvasViewport">
+          <div id="stageShell"><div id="stage" tabindex="0" aria-label="Dashboard design canvas"></div></div>
+        </div>
+        <div class="canvas-footer">
+          <div class="footer-left"><span class="footer-pill"><span class="tiny-green"></span>Ready to export</span><span class="footer-note">Drag anything. Make it yours.</span></div>
+          <div class="footer-right"><span id="elementCounter">0 ELEMENTS</span><span class="sep-dot">·</span><span>POWER BI READY</span></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar sidebar-right" id="rightSidebar">
+      <div class="sidebar-head properties-head"><div><span class="eyebrow">DESIGN CONTROLS</span><h2>Properties</h2></div><div class="panel-icon">⌘</div></div>
+      <div class="sidebar-scroll" id="inspector"></div>
+      <div class="right-foot"><span class="keyboard-key">⌫</span> Delete selected <span class="divider-dot">·</span> <span class="keyboard-key">Ctrl Z</span> Undo</div>
+    </aside>
+  </main>
+  <div class="toast-host" id="toastHost" role="status" aria-live="polite"></div>
+  <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  <div class="modal-backdrop" id="exportModal" aria-hidden="true">
+    <div class="export-dialog" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+      <div class="dialog-top"><div class="dialog-icon">↓</div><button class="modal-close" id="closeExport" type="button" aria-label="Close">×</button></div>
+      <span class="eyebrow">YOU MADE SOMETHING GREAT</span>
+      <h2 id="exportTitle">Ready for Power BI.</h2>
+      <p class="dialog-subtitle">Export your clean background, editable design and exact visual positions — all in one place.</p>
+      <div class="export-items">
+        <button class="export-item" type="button" data-download="zip"><span class="export-item-icon">▣</span><span><strong>Complete design package</strong><small>PNG background + theme + JSON files</small></span><b>ZIP ↓</b></button>
+        <button class="export-item" type="button" data-download="background"><span class="export-item-icon">◩</span><span><strong>Clean Power BI background</strong><small>High-resolution PNG · no sample values</small></span><b>PNG ↓</b></button>
+        <button class="export-item" type="button" data-download="preview"><span class="export-item-icon">▥</span><span><strong>Design preview</strong><small>Full visual mockup as PNG</small></span><b>PNG ↓</b></button>
+        <button class="export-item" type="button" data-download="theme"><span class="export-item-icon">{ }</span><span><strong>Power BI theme</strong><small>Compatible report theme JSON</small></span><b>JSON ↓</b></button>
+        <button class="export-item" type="button" data-download="layout"><span class="export-item-icon">⌗</span><span><strong>Visual coordinates</strong><small>Exact X, Y, width and height</small></span><b>JSON ↓</b></button>
+      </div>
+      <p class="dialog-caption">Background + theme do not automatically create Power BI data visuals. The layout file is a precise placement guide.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
