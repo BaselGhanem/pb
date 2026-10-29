@@ -1,47 +1,35 @@
-# Power BI Layout Studio
+# Power BI Layout Studio — X Academy
 
-A premium, zero-login, browser-based layout builder created for **X Academy**.
+A premium, no-login, browser-based Power BI layout editor.
 
 ## Live editor
-Open the published GitHub Pages site (once Pages is enabled for this repository).
+https://baselghanem.github.io/pb/
 
-## Features
-- Visual designer for KPI cards, bar and line charts, donut charts, tables, slicers, titles, labels, dividers and navigation.
-- Drag to position, resize with handles, use precise X/Y/width/height properties.
-- Snap-to-grid, optional grid overlay, keyboard nudging and zoom-to-fit.
-- Three complete templates: Midnight Teal, Ocean Intelligence and Arctic Canvas.
-- Three color-world presets, accent/background/card color pickers, corner radius and glow.
-- Duplicate, delete, align, change layer ordering, undo and redo.
-- HD, Full HD, 4K and custom Power BI canvas dimensions.
-- Automatic local saves, editable project JSON export and import.
-- Clean PNG background without demo data, optional full mockup PNG.
-- Power BI theme JSON, exact visual-layout JSON and a standalone ZIP package.
+## Start in three clicks
+1. Click Browse 120 layouts.
+2. Filter/search by Executive, Sales, Finance, HR, Operations, Marketing, Healthcare, Retail, Customers, or Projects.
+3. Choose a preview to apply it directly to your editable canvas.
 
-No build, login, Firebase, server, external JavaScript libraries or account is required.
+The library contains **120 presets** composed from **12 genuinely different dashboard structures** across **10 business categories**, with matching preview thumbnails, search, categories, locally saved favorites and Surprise me.
 
-## How to use
-1. Choose a visual template or begin with the default.
-2. Click a visual in the left panel to insert it.
-3. Drag and resize on canvas. Use Properties for precise placement.
-4. Adjust colors under Appearance. Preview and exports reflect your color choices.
-5. Click **Export design** and choose **Complete design package**.
-6. In Power BI Desktop, set the report page to the same custom pixel dimensions.
-7. Apply background.png using image fit **Fit**, load the theme from **View > Themes > Browse for themes**, and use visual-layout.json as the positioning guide for real report visuals.
+The 12 structures: Classic Overview, Sidebar Command, KPI Scorecard, Hero Spotlight, Analytics Deep Dive, Insight Matrix, Performance Ribbon, Three-Column Studio, Comparison Board, Signal Monitor, Control Room and Editorial Focus.
 
-**Important:** The background and exported coordinates do not create data-bound Power BI visuals or a PBIR/PBIP project. Values and chart data in the preview are illustrative and are omitted from the clean background. Automatic PBIR project manipulation is outside this version.
+## Quick Builder
+Alternatively, select Quick Builder, choose the category, number of KPI cards (2, 3, 4 or 6), number of charts (1, 2 or 3), and top or side navigation. One click automatically builds an aligned layout. It preserves the current canvas dimensions and colors.
 
-## Files
-- index.html — app structure
-- styles.css — responsive visual system
-- app.js — editor, rendering, local storage, image/ZIP/JSON export
-- .github/workflows/pages.yml — automatic GitHub Pages publishing from main
-- .github/workflows/verify.yml — JavaScript syntax and packaging checks
+## Editing and exports
+Drag/resize, exact coordinates, layers, undo/redo, themes, zoom, snap-to-grid, HD/Full HD/4K/custom sizes, automatic local storage and reusable project JSON. Export a PNG background without mock data, an optional design mockup PNG, Power BI theme JSON, exact visual coordinates and an entire ZIP package.
 
-## Privacy
-Design projects are stored in the browser's localStorage. Import, ZIP assembly and PNG rendering run locally. No project data is uploaded.
+Use the PNG as a Power BI page background, import the report theme, then place actual Power BI visuals using the exported coordinates. **The app does not automatically generate data-bound report visuals or PBIR/PBIP files.** Chart values in the preview are demonstration data only.
 
-## Development
-Static app; open index.html in a recent browser. To use GitHub Pages, enable GitHub Pages under repository Settings > Pages and select GitHub Actions if not already configured.
+## Implementation
+- index.html: Editor and gallery interfaces
+- styles.css and gallery.css: premium responsive styling
+- layouts.js: 120 layout catalog and composition/preview engine
+- app.js: interactive editor, storage, exports
+- tests/layouts.test.js: geometry/overlap/quantity testing
+- GitHub Actions: Pages deployment and validation
 
-## License
+Static website, no registration, Firebase, backend, or JavaScript runtime libraries required.
+
 Copyright X Academy. All rights reserved.

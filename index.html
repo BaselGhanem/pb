@@ -8,6 +8,8 @@
   <title>Power BI Layout Studio · X Academy</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='17' fill='%230b111d'/%3E%3Cpath d='M16 17l15 15-15 15m32-30L33 32l15 15' fill='none' stroke='%23099999' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./gallery.css">
+  <script src="./layouts.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -38,10 +40,17 @@
       </div>
       <div class="sidebar-scroll">
         <div class="tab-pane active" id="buildPane">
+          <div class="discovery-feature">
+            <div class="discovery-top"><span class="discovery-spark">✧</span><span class="discovery-tag">NEW · 120 DESIGNS</span></div>
+            <strong>Your next dashboard starts here.</strong>
+            <p>Explore ready-made professional layouts. One click, fully editable.</p>
+            <button type="button" class="discovery-button" id="sidebarGalleryBtn">Explore layouts <span>↗</span></button>
+            <button type="button" class="discovery-quick" id="sidebarQuickBtn">✦ &nbsp; Or build one instantly</button>
+          </div>
           <section class="tool-section">
-            <div class="section-heading"><span>QUICK START</span><span class="muted-heading">03 PRESETS</span></div>
+            <div class="section-heading"><span>COLOR STARTERS</span><span class="muted-heading">03 STYLES</span></div>
             <div class="template-grid" id="templateGrid"></div>
-            <p class="micro-hint">Choose a starting point. Every detail stays editable.</p>
+            <p class="micro-hint">For more layouts, use Explore layouts above.</p>
           </section>
           <section class="tool-section">
             <div class="section-heading"><span>ADD A VISUAL</span><span class="muted-heading">CLICK TO ADD</span></div>
@@ -99,6 +108,7 @@
       <div class="document-bar">
         <div class="document-info"><span class="crumb">Workspace</span><span class="crumb-sep">/</span><input id="projectName" aria-label="Project name" spellcheck="false" maxlength="60" value="Sales Intelligence"><span class="name-pen">✎</span></div>
         <div class="document-actions">
+          <button id="galleryOpenBtn" class="library-header-button" type="button"><span>▦</span> Browse <b>120 layouts</b></button>
           <button id="undoBtn" class="icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo" type="button">↶</button>
           <button id="redoBtn" class="icon-btn" title="Redo (Ctrl+Y)" aria-label="Redo" type="button">↷</button>
           <span class="tool-separator"></span>
@@ -128,6 +138,47 @@
   </main>
   <div class="toast-host" id="toastHost" role="status" aria-live="polite"></div>
   <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  <div class="layout-backdrop" id="layoutBackdrop" aria-hidden="true">
+    <section class="layout-dialog" role="dialog" aria-modal="true" aria-labelledby="libraryTitle">
+      <header class="layout-dialog-head">
+        <div class="library-headline"><span class="library-kicker"><span class="library-pulse"></span> X ACADEMY DESIGN LIBRARY</span><h2 id="libraryTitle">Find your perfect layout<span>.</span></h2><p>120 ready-to-use designs. Pick one and start customizing instantly.</p></div>
+        <button id="closeGallery" class="gallery-close" type="button" aria-label="Close layout library">×</button>
+      </header>
+      <div class="library-top-tabs">
+        <button class="library-tab active" type="button" data-gallery-page="templates"><span>▦</span> Explore 120 layouts</button>
+        <button class="library-tab" type="button" data-gallery-page="builder"><span>✦</span> Quick Builder <span class="builder-tag">INSTANT</span></button>
+      </div>
+      <div id="galleryTemplatesPage" class="gallery-page active">
+        <div class="library-control-row">
+          <label class="gallery-search-wrap"><span>⌕</span><input id="gallerySearch" type="search" placeholder="Search sales, finance, scorecard…" autocomplete="off" aria-label="Search layouts"></label>
+          <button type="button" id="randomLayoutBtn" class="library-surprise">⤨ <span>Surprise me</span></button>
+        </div>
+        <div class="gallery-categories" id="galleryCategories" aria-label="Filter layout category"></div>
+        <div class="gallery-results-info"><span id="galleryCount">120 layouts</span><span>Click any design to apply <span class="gallery-arrow">↗</span></span></div>
+        <div class="gallery-list-scroll"><div class="gallery-grid" id="galleryGrid"></div><div id="galleryEmpty" class="gallery-empty" hidden>No matching layouts. Try a different search.</div></div>
+      </div>
+      <div id="galleryBuilderPage" class="gallery-page">
+        <div class="quick-builder-content">
+          <div class="quick-builder-intro"><span class="quick-icon">✦</span><div><h3>Your layout, created in seconds.</h3><p>Choose what you need. We handle spacing, alignment and composition.</p></div></div>
+          <div class="quick-builder-columns">
+            <div class="quick-builder-controls">
+              <div class="quick-control"><label for="quickCategory">Dashboard focus</label><select id="quickCategory" class="quick-select"></select></div>
+              <div class="quick-control"><label>How many KPI cards?</label><div class="quick-choice-grid" data-choice-group="kpis"><button type="button" data-choice-value="2">2</button><button type="button" data-choice-value="3" class="active">3</button><button type="button" data-choice-value="4">4</button><button type="button" data-choice-value="6">6</button></div></div>
+              <div class="quick-control"><label>How many charts?</label><div class="quick-choice-grid" data-choice-group="charts"><button type="button" data-choice-value="1">1</button><button type="button" data-choice-value="2" class="active">2</button><button type="button" data-choice-value="3">3</button></div></div>
+              <div class="quick-control"><label>Navigation placement</label><div class="quick-choice-grid two-col" data-choice-group="navigation"><button type="button" class="active" data-choice-value="top">↔ Top</button><button type="button" data-choice-value="side">▥ Sidebar</button></div></div>
+              <button id="quickGenerateBtn" type="button" class="quick-generate-btn">✦ Build my layout <span>↗</span></button>
+              <p class="quick-footnote">Your current canvas size and colors are preserved. Undo is always available.</p>
+            </div>
+            <div class="quick-builder-illustration">
+              <div class="quick-preview-top"><span>LIVE COMPOSITION</span><span class="quick-preview-live"><i></i> READY</span></div>
+              <div id="quickPreview" class="quick-preview-board"></div>
+              <div class="quick-preview-foot"><span id="quickSummary">3 KPI cards + 2 charts</span><span>Pixel-perfect spacing</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
   <div class="modal-backdrop" id="exportModal" aria-hidden="true">
     <div class="export-dialog" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
       <div class="dialog-top"><div class="dialog-icon">↓</div><button class="modal-close" id="closeExport" type="button" aria-label="Close">×</button></div>

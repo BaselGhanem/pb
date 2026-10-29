@@ -57,7 +57,7 @@
       w:clamp(i.w,24,width),h:clamp(i.h,5,height),
       title:String(i.title||'').slice(0,100),value:String(i.value||'').slice(0,60),note:String(i.note||'').slice(0,80)
     })):template(theme).items;
-    return {version:1,name:String(source.name||'Untitled Dashboard').slice(0,60),width,height,theme,
+    return {version:1,name:String(source.name||'Untitled Dashboard').slice(0,60),layoutId:String(source.layoutId||'').slice(0,90),width,height,theme,
       colors:{accent:validHex(source.colors?.accent,base.accent),bg:validHex(source.colors?.bg,base.bg),card:validHex(source.colors?.card,base.card)},
       radius:clamp(source.radius??18,0,38),glow:clamp(source.glow??65,0,100),grid:!!source.grid,snap:source.snap!==false,items};
   }
@@ -92,7 +92,7 @@
     if(i.type==='title')return `<div class="design-title"><span class="title-accent"></span><strong>${esc(i.title)}</strong></div>`;
     if(i.type==='label')return `<div class="design-label">${esc(i.title)}</div>`;
     if(i.type==='divider')return '<div class="design-line"></div>';
-    if(i.type==='nav')return '<div class="nav-pills"><span class="nav-pill active">Overview</span><span class="nav-pill">Analysis</span><span class="nav-pill">Details</span></div>';
+    if(i.type==='nav')return `<div class="nav-pills${i.h>i.w?' vertical':''}"><span class="nav-pill active">Overview</span><span class="nav-pill">Analysis</span><span class="nav-pill">Details</span></div>`;
     const top=`<div class="visual-top"><span class="visual-title">${esc(i.title)}</span><span class="visual-menu">···</span></div>`;
     if(i.type==='kpi')return `<div class="visual-card">${top}<div class="kpi-value">${esc(i.value||'$4.82M')}</div><div class="kpi-footer"><span class="kpi-change">↗ ${esc(i.note||'+12.8%')}</span><span>vs previous period</span></div></div>`;
     if(['bar','line','donut'].includes(i.type))return `<div class="visual-card">${top}<div class="chart-mock">${chartSvg(i.type,t.accent)}</div></div>`;
@@ -229,7 +229,7 @@
   }
   function pointerUp(){if(!pointer)return;document.body.style.cursor='';if(pointer.changed){checkpoint(pointer.before);refresh();persist();}pointer=null;}
   function initEvents(){
-    $('#templateGrid').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)applyTemplate(b.dataset.template);});
+    $('#templateGrid').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)applyTheme(b.dataset.template);});
     $('#visualGrid').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addVisual(b.dataset.add);});
     $('#themeOptions').addEventListener('click',e=>{const b=e.target.closest('[data-theme]');if(b)applyTheme(b.dataset.theme);});
     $('#layersList').addEventListener('click',e=>{const b=e.target.closest('[data-select]');if(b)select(b.dataset.select);});
@@ -376,7 +376,18 @@
       }else if(i.type==='divider'){
         const g=ctx.createLinearGradient(x,y,x+ew,y);g.addColorStop(0,t.accent);g.addColorStop(1,rgba(t.accent,0));ctx.fillStyle=g;ctx.fillRect(x,y+eh/2,ew,Math.min(3*scale,eh));
       }else if(i.type==='nav'){
-        ['Overview','Analysis','Details'].forEach((text,j)=>{const pw=Math.min(112*scale,ew/3.2),gap=8*scale,px=x+j*(pw+gap),py=y;if(px+pw>x+ew)return;canvasColorFill(ctx,j?t.card:t.accent,px,py,pw,Math.min(eh,42*scale),8*scale);if(!clean)canvasText(ctx,text,px+12*scale,py+12*scale,12*scale,j?t.muted:'#ffffff','700',pw-12*scale);});
+        if(eh>ew){
+          canvasColorFill(ctx,t.card,x,y,ew,eh,Math.min(state.radius,17*scale));
+          const labels=['Overview','Analysis','Details','Performance'];
+          labels.forEach((text,j)=>{
+            const px=x+16*scale,py=y+26*scale+j*62*scale,pw=Math.max(20,ew-32*scale),ph=39*scale;
+            if(py+ph>y+eh)return;
+            canvasColorFill(ctx,j===0?t.accent:t.bg,px,py,pw,ph,8*scale);
+            if(!clean)canvasText(ctx,text,px+11*scale,py+12*scale,13*scale,j===0?'#ffffff':t.muted,'700',pw-14*scale);
+          });
+        }else{
+          ['Overview','Analysis','Details'].forEach((text,j)=>{const pw=Math.min(112*scale,ew/3.2),gap=8*scale,px=x+j*(pw+gap),py=y;if(px+pw>x+ew)return;canvasColorFill(ctx,j?t.card:t.accent,px,py,pw,Math.min(eh,42*scale),8*scale);if(!clean)canvasText(ctx,text,px+12*scale,py+12*scale,12*scale,j?t.muted:'#ffffff','700',pw-12*scale);});
+        }
       }
     }
     return canvas;
@@ -415,5 +426,149 @@
     }catch(error){console.error(error);notify(`Export failed: ${error.message}`,true);}
     finally{exportBusy=false;buttons.forEach(b=>b.disabled=false);}
   }
-  renderVisuals();initEvents();refresh(true);
+  const library=window.LayoutStudioLibrary;
+  const favKey='xacademy-layout-favorites-v1';
+  const seenKey='xacademy-layout-gallery-2026-v1';
+  const view={category:'All',search:'',page:'templates'};
+  const quick={category:'Sales',kpis:3,charts:2,navigation:'top'};
+  let favorites=[];
+  try{const saved=JSON.parse(localStorage.getItem(favKey)||'[]');if(Array.isArray(saved))favorites=saved.filter(v=>typeof v==='string');}catch(e){favorites=[];}
+  function selectGalleryPage(page){
+    view.page=page==='builder'?'builder':'templates';
+    document.querySelectorAll('.library-tab').forEach(b=>b.classList.toggle('active',b.dataset.galleryPage===view.page));
+    $('#galleryTemplatesPage').classList.toggle('active',view.page==='templates');
+    $('#galleryBuilderPage').classList.toggle('active',view.page==='builder');
+    if(view.page==='builder')renderQuickPreview();
+  }
+  function openGallery(page='templates'){
+    $('#layoutBackdrop').classList.add('open');
+    $('#layoutBackdrop').setAttribute('aria-hidden','false');
+    selectGalleryPage(page);
+    if(page==='templates'){$('#gallerySearch').value=view.search;renderGallery();}
+    else renderQuickPreview();
+    try{localStorage.setItem(seenKey,'1');}catch(e){}
+    $('#leftSidebar').classList.remove('mobile-open');
+    setTimeout(()=>{if($('#layoutBackdrop').classList.contains('open'))(page==='templates'?$('#gallerySearch'):$('#quickCategory')).focus();},0);
+  }
+  function closeGallery(){
+    $('#layoutBackdrop').classList.remove('open');
+    $('#layoutBackdrop').setAttribute('aria-hidden','true');
+  }
+  function galleryEntries(){
+    const q=view.search.trim().toLowerCase();
+    return library.catalog.filter(record=>{
+      if(view.category==='Favorites'&&!favorites.includes(record.id))return false;
+      if(view.category!=='All'&&view.category!=='Favorites'&&record.category!==view.category)return false;
+      if(!q)return true;
+      return [record.name,record.category,record.description,record.density,record.form].join(' ').toLowerCase().includes(q);
+    }).sort((a,b)=>Number(b.featured)-Number(a.featured));
+  }
+  function renderGallery(){
+    $('#galleryCategories').innerHTML=['All','Favorites',...library.categories.map(c=>c.id)].map(category=>{
+      const label=category==='All'?'All layouts':category==='Favorites'?'★ Saved':category;
+      return `<button class="category-chip${view.category===category?' active':''}" type="button" data-category="${esc(category)}">${esc(label)}</button>`;
+    }).join('');
+    const entries=galleryEntries();
+    $('#galleryCount').textContent=`${entries.length} ${entries.length===1?'layout':'layouts'} to explore`;
+    $('#galleryGrid').innerHTML=entries.map(record=>{
+      const favorite=favorites.includes(record.id);
+      const tag=record.featured?'POPULAR':record.density.toUpperCase();
+      return `<article class="layout-card">
+        <div class="layout-card-tags"><span>${esc(record.category)}</span><span>${esc(tag)}</span></div>
+        <button class="layout-preview-button" type="button" data-choose-layout="${esc(record.id)}" aria-label="Use ${esc(record.name)}">
+          <div class="layout-card-preview">${library.thumbnail(record)}<div class="layout-card-sheen"></div><div class="layout-card-overlay"><b>Use this layout ↗</b></div></div>
+        </button>
+        <div class="layout-card-bottom">
+          <div class="layout-card-meta"><strong>${esc(record.name)}</strong><small>${esc(record.description)}</small></div>
+          <button class="favorite-button${favorite?' active':''}" type="button" data-favorite="${esc(record.id)}" title="${favorite?'Remove saved layout':'Save layout'}" aria-label="${favorite?'Remove saved layout':'Save layout'}">${favorite?'★':'☆'}</button>
+        </div>
+      </article>`;
+    }).join('');
+    $('#galleryEmpty').hidden=entries.length>0;
+  }
+  function chooseLayout(idValue){
+    const selectedLayout=library.catalog.find(x=>x.id===idValue);
+    if(!selectedLayout)return;
+    update(s=>{
+      s.items=library.createLayout(selectedLayout,s.width,s.height);
+      s.name=selectedLayout.name.replace(' · ',' — ');
+      s.layoutId=selectedLayout.id;
+      s.theme=selectedLayout.theme;
+      const t=THEMES[selectedLayout.theme];s.colors={accent:t.accent,bg:t.bg,card:t.card};
+    },true);
+    selected=null;refresh(true);closeGallery();
+    notify(`${selectedLayout.shortName} applied — customize anything`);
+  }
+  function toggleFavorite(idValue){
+    if(favorites.includes(idValue))favorites=favorites.filter(v=>v!==idValue);
+    else favorites.push(idValue);
+    try{localStorage.setItem(favKey,JSON.stringify(favorites));}catch(e){}
+    renderGallery();
+  }
+  function renderQuickPreview(){
+    const nodes=library.quickBuild({...quick,width:1280,height:720});
+    const t=activeTheme();
+    let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720"><rect width="1280" height="720" fill="${t.bg}"/><ellipse cx="1050" cy="5" rx="460" ry="270" fill="${t.accent}" opacity=".08"/>`;
+    for(const n of nodes){
+      const x=n.x,y=n.y,w=n.w,h=n.h;
+      if(['kpi','bar','line','donut'].includes(n.type)){
+        svg+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="15" fill="${t.card}" stroke="${t.border}" stroke-width="2"/>`;
+        svg+=`<rect x="${x+17}" y="${y+17}" width="${Math.min(155,w*.52)}" height="10" rx="4" fill="${t.muted}" opacity=".58"/>`;
+        if(n.type==='kpi'){svg+=`<rect x="${x+18}" y="${y+48}" width="${Math.min(w*.44,160)}" height="17" rx="5" fill="${t.text}" opacity=".83"/><rect x="${x+18}" y="${y+h-28}" width="75" height="11" rx="5" fill="${t.accent}" opacity=".6"/>`;}
+        if(n.type==='bar')for(let i=0;i<8;i++){const v=[.3,.5,.42,.7,.55,.82,.64,.93][i],bh=v*(h-75),xx=x+20+i*(w-40)/8;svg+=`<rect x="${xx}" y="${y+h-20-bh}" width="${Math.max(8,(w-40)/8*.6)}" height="${bh}" rx="4" fill="${t.accent}" opacity=".8"/>`;}
+        if(n.type==='line')svg+=`<polyline fill="none" stroke="${t.accent}" stroke-width="7" points="${[.31,.52,.44,.73,.58,.84,.69,.94].map((v,i)=>`${x+25+i*(w-50)/7},${y+h-25-v*(h-75)}`).join(' ')}"/>`;
+        if(n.type==='donut'){const rr=Math.min(h*.27,w*.2),cx=x+w*.5,cy=y+h*.57;svg+=`<circle cx="${cx}" cy="${cy}" r="${rr}" fill="none" stroke="${t.accent}" stroke-width="${rr*.55}" stroke-dasharray="${rr*3.5} ${rr*6.4}"/>`;}
+      }
+      if(n.type==='title')svg+=`<rect x="${x}" y="${y+10}" width="7" height="39" rx="3" fill="${t.accent}"/><rect x="${x+22}" y="${y+18}" width="${Math.min(430,w-50)}" height="21" rx="5" fill="${t.text}" opacity=".88"/>`;
+      if(n.type==='label')svg+=`<rect x="${x}" y="${y+8}" width="${Math.min(350,w)}" height="9" rx="3" fill="${t.muted}" opacity=".55"/>`;
+      if(n.type==='nav'){
+        if(h>w){svg+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="14" fill="${t.card}" stroke="${t.border}"/>`;for(let i=0;i<5;i++)svg+=`<rect x="${x+15}" y="${y+29+i*62}" width="${w-30}" height="34" rx="7" fill="${i===0?t.accent:t.border}"/>`;}
+        else for(let i=0;i<3;i++)svg+=`<rect x="${x+i*w/3}" y="${y}" width="${w/3-9}" height="${h}" rx="7" fill="${i===0?t.accent:t.card}" stroke="${t.border}"/>`;
+      }
+    }
+    svg+='</svg>';
+    $('#quickPreview').innerHTML=svg;
+    $('#quickSummary').textContent=`${quick.kpis} KPI cards + ${quick.charts} ${quick.charts===1?'chart':'charts'} · ${quick.navigation==='side'?'Sidebar':'Top'} navigation`;
+  }
+  function buildQuick(){
+    update(s=>{
+      s.items=library.quickBuild({...quick,width:s.width,height:s.height});
+      const sector=library.categories.find(c=>c.id===quick.category);
+      s.name=`${sector?.subject||quick.category} — Custom`;
+      s.layoutId='quick';
+    },true);
+    selected=null;refresh(true);closeGallery();notify('Your custom layout is ready — fine-tune anything');
+  }
+  function initGallery(){
+    if(!library ||library.catalog.length!==120){console.error('Layout library is unavailable');return;}
+    $('#quickCategory').innerHTML=library.categories.map(c=>`<option value="${esc(c.id)}">${esc(c.id)}</option>`).join('');
+    $('#quickCategory').value=quick.category;
+    $('#galleryOpenBtn').addEventListener('click',()=>openGallery('templates'));
+    $('#sidebarGalleryBtn').addEventListener('click',()=>openGallery('templates'));
+    $('#sidebarQuickBtn').addEventListener('click',()=>openGallery('builder'));
+    $('#closeGallery').addEventListener('click',closeGallery);
+    $('#layoutBackdrop').addEventListener('click',e=>{if(e.target===$('#layoutBackdrop'))closeGallery();});
+    document.querySelectorAll('.library-tab').forEach(b=>b.addEventListener('click',()=>selectGalleryPage(b.dataset.galleryPage)));
+    $('#gallerySearch').addEventListener('input',e=>{view.search=e.target.value;renderGallery();});
+    $('#galleryCategories').addEventListener('click',e=>{
+      const b=e.target.closest('[data-category]');if(!b)return;view.category=b.dataset.category;
+      renderGallery();$('.gallery-list-scroll').scrollTop=0;
+    });
+    $('#galleryGrid').addEventListener('click',e=>{
+      const star=e.target.closest('[data-favorite]');if(star){toggleFavorite(star.dataset.favorite);return;}
+      const card=e.target.closest('[data-choose-layout]');if(card)chooseLayout(card.dataset.chooseLayout);
+    });
+    $('#randomLayoutBtn').addEventListener('click',()=>{const entries=galleryEntries();const source=entries.length?entries:library.catalog;chooseLayout(source[Math.floor(Math.random()*source.length)].id);});
+    $('#quickCategory').addEventListener('change',e=>{quick.category=e.target.value;renderQuickPreview();});
+    document.querySelectorAll('.quick-choice-grid').forEach(group=>group.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-choice-value]');if(!btn)return;
+      const key=group.dataset.choiceGroup;quick[key]=['kpis','charts'].includes(key)?Number(btn.dataset.choiceValue):btn.dataset.choiceValue;
+      group.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderQuickPreview();
+    }));
+    $('#quickGenerateBtn').addEventListener('click',buildQuick);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#layoutBackdrop').classList.contains('open'))closeGallery();});
+    renderGallery();renderQuickPreview();
+    try{if(!localStorage.getItem(seenKey))setTimeout(()=>openGallery('templates'),350);}catch(e){}
+  }
+  renderVisuals();initEvents();initGallery();refresh(true);
 })();
